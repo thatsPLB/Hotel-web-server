@@ -1,6 +1,6 @@
 const express =require('express')
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 const app = express();
 const port = process.env.PORT || 5000
@@ -34,6 +34,20 @@ async function run() {
       const cursor = roomCollection.find()
       const result = await cursor.toArray()
       res.send(result);
+    })
+
+    app.get('/Rooms/:id', async(req, res) =>{
+      const id = req.params.id
+      const query = { _id: new ObjectId(id) }
+
+      const options ={
+        // Include only the 'title' and 'imgDB' fields in the returned documents
+        projection: { name:1, rating:1, image:1}
+      };
+
+
+      const result = await roomCollection.findOne(query,options)
+      res.send(result)
     })
 
 
