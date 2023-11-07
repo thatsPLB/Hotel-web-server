@@ -29,6 +29,7 @@ async function run() {
     await client.connect();
 
     const roomCollection = client.db('Assignment-11').collection('Rooms')
+    const bookingCollection = client.db('Assignment-11').collection('bookings');
 
     app.get('/Rooms',async(req, res)=>{
       const cursor = roomCollection.find()
@@ -42,8 +43,21 @@ async function run() {
 
       const options ={
         // Include only the 'title' and 'imgDB' fields in the returned documents
-        projection: { name:1, rating:1, image:1}
+        projection: { name:1, rating:1, image:1, price:1, description:1,availability:1,size:1}
       };
+
+
+
+
+
+      
+      // bookings
+      app.post('/bookings', async(req, res) =>{
+        const booking = req.body;
+        console.log(booking);
+        const result = await bookingCollection.insertOne(booking);
+        res.send(result)
+      })
 
 
       const result = await roomCollection.findOne(query,options)
