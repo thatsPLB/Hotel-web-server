@@ -1,20 +1,21 @@
 const express =require('express')
 const cors = require('cors');
 const jwt =require('jsonwebtoken')
-const cookieParse= require('cookie-parser')
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-const cookieParser = require('cookie-parser');
 require('dotenv').config()
 const app = express();
 const port = process.env.PORT || 5000
 
 // middleware
 app.use(cors({
-  origin: ['http://localhost:5173'],
+  origin: [
+    'http://localhost:5173',
+    'https://assignment-11-f7608.web.app',
+    'https://assignment-11-f7608.firebaseapp.com'
+  ],
   credentials:true
 }));
 app.use(express.json());
-app.use(cookieParser())
 
 
 console.log(process.env.DB_PASS);
@@ -33,7 +34,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
 
     const roomCollection = client.db('Assignment-11').collection('Rooms')
     const bookingCollection = client.db('Assignment-11').collection('bookings');
@@ -44,11 +45,12 @@ async function run() {
       console.log(user);
       const token = jwt.sign(user,process.env.ACCESS_TOKEN_SECRET, {expiresIn: '1h'})
       res
-      .cookie('token',token,{
+      .cookie('token', token, {
         httpOnly: true,
-        secure:false,
-        sameSite:'none'
-      })
+        secure: process.env.NODE_ENV === 'production', 
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+
+    })
       .send({success:true})
     })
     // rooms related API
@@ -69,19 +71,19 @@ async function run() {
 
 
 
-
-
       
       // bookings
 
-      app.get('/bookings',async(req,res)=>{
+      app.get('/mybookings',async(req,res)=>{
         console.log(req.query.email);
-        console.log('tok tok token',req.cookies.token);
+        // prblm
+        // console.log('tok tok token',req.cookies);
         let query ={};
         if(req.query?.email){
           query ={email: req.query.email}
         }
         const result = await bookingCollection.find(query).toArray()
+        console.log(result);
         res.send(result)
       })
 
